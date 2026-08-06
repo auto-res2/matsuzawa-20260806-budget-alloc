@@ -1,0 +1,25 @@
+# baseline -- the allocation Runs N' Poses actually used.
+#
+# One MSA, 25 diffusion samples, one API call. This is the control the other
+# two arms are measured against.
+
+run_id: comparative-1-boltz2-rnp
+arm: baseline
+budget: 25
+
+# Unused by this arm; present so every run config has the same shape.
+n_msa_variants: 1
+n_dock_poses: 0
+
+n_systems:
+  sanity: 3
+  pilot: 20
+  full: null   # null means the whole 20-60 population
+
+# NIM calls are network-bound, so concurrency is about latency, not cores.
+workers: 8
+
+# The 25x25 symmetry-corrected RMSD matrix behind unique_pose_modes. It is
+# the diagnostic that separates "diversity did not increase" from "diversity
+# increased but pointed the wrong way", so it stays on.
+pose_matrix: true

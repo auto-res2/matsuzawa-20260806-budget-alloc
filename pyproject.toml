@@ -1,14 +1,25 @@
-# Please list the required python packages in `dependencies` below.
-# Keep this file limited to dependencies (hydra-core, wandb, plus
-# task-specific libraries) — see AGENTS.md.
+# Dependencies only, per AGENTS.md.
+#
+# NOTE TO ANY AGENT REGENERATING THE Dockerfile: every package here publishes
+# a cp311 manylinux aarch64 wheel, which was verified against uv.lock. The
+# target runtime is aarch64 (NVIDIA GB200), where a package with only an
+# x86_64 wheel installs nowhere however cleanly it resolves. Do not add
+# unpinned installs; do not add torch (this workload never touches a GPU --
+# the three models are hosted NVIDIA NIM endpoints reached over HTTPS).
+#
+# OpenStructure is deliberately absent: it is not pip-installable and lives in
+# a separate conda prefix built in the Dockerfile. See src/model.py.
 
 [project]
 name = "experiment"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "hydra-core",
-    "wandb",
+    "hydra-core==1.3.2",
+    "wandb==0.18.7",
+    "numpy==2.1.3",
+    "pandas==2.2.3",
+    "matplotlib==3.9.2",
 ]
 
 # `src/` is run with `uv run python -m src.main` from the repository root,

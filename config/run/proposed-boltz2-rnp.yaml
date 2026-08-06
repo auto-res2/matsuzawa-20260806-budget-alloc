@@ -1,0 +1,20 @@
+# proposed -- spend the same 25 structures on MSA diversity instead.
+#
+# Five depth-varied subsamples of the SAME MSA the baseline receives, five
+# diffusion samples each. Variant 0 is the full alignment, so this arm's input
+# set contains the baseline's input rather than replacing it.
+
+run_id: proposed-boltz2-rnp
+arm: proposed
+budget: 25
+
+n_msa_variants: 5
+n_dock_poses: 0
+
+n_systems:
+  sanity: 3
+  pilot: 20
+  full: null
+
+workers: 8
+pose_matrix: true

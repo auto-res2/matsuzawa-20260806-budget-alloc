@@ -1,0 +1,27 @@
+# lineage -- spend part of the same 25 on a different architectural lineage.
+#
+# 20 co-folded structures from Boltz-2 plus 5 DiffDock poses docked into the
+# most confident of those receptors. DiffDock is a diffusion docking model, so
+# it shares neither weights nor training paradigm with the co-folding family;
+# this tests whether the complementarity worth having is trapped inside that
+# family.
+#
+# The crystal receptor is deliberately NOT used: handing DiffDock the answer's
+# receptor changes the prediction task and the arm would no longer be
+# comparable. PoseBench already reports co-folding beating DL docking
+# baselines, so a negative result here is the expectation, not a surprise.
+
+run_id: comparative-2-boltz2-rnp
+arm: lineage
+budget: 25
+
+n_msa_variants: 1
+n_dock_poses: 5
+
+n_systems:
+  sanity: 3
+  pilot: 20
+  full: null
+
+workers: 8
+pose_matrix: true

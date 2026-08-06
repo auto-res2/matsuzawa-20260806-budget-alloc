@@ -1,5 +1,6 @@
-# Main configuration for Hydra
-# This file will be populated by AI code generator based on experimental design
+# Shared defaults. Anything that differs between the three arms lives in
+# config/run/*.yaml; anything here is deliberately held constant so that the
+# arms differ ONLY in how the 25-structure budget is divided.
 
 defaults:
   - _self_
@@ -11,8 +12,27 @@ mode: full
 # Results output directory
 results_dir: .research/results
 
-# WandB configuration (will be set by AI agent)
+# Datasets, extracted ground truth, MSAs and intermediate structures.
+cache_dir: .cache
+
 wandb:
-  entity: ???
-  project: ???
+  entity: airas
+  project: cofolding-budget-allocation
   mode: online
+
+# Held identical across all three arms. Changing these would confound the
+# allocation comparison with a sampling-quality difference.
+boltz2:
+  recycling_steps: 3
+  sampling_steps: 50
+
+msa:
+  # One MSA-search call per unique sequence; every arm consumes the result of
+  # the same call, so MSA quality is not a source of difference between arms.
+  max_sequences: 4096
+  # Seeds the deterministic subsampling in the proposed arm.
+  seed: 0
+
+diffdock:
+  time_divisions: 20
+  steps: 18

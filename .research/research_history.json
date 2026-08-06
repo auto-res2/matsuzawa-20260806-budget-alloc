@@ -1,1 +1,256 @@
-{}
+{
+  "research_topic": "タンパク質-リガンド co-folding における固定推論予算の配分戦略。Runs N' Poses ベンチマークにおいて、各系につき25構造という推論予算をどう配分すれば正解ポーズを引き当てられるかを問う。現行の配分（1 MSA × 25 拡散サンプル）に対し、上流の MSA 多様性に配る配分（5 MSA変種 × 5サンプル）と、別系統の生成器に配る配分（Boltz-2 20本 + DiffDock 5本）を、全アーム25構造で予算を揃えて比較する。評価は OpenStructure の lDDT-PLI で統一し、学習データ類似度で層別する。",
+  "queries": [
+    "consensus scoring pose selection ensemble co-folding AlphaFold3 protein-ligand ranking",
+    "MSA subsampling diversity protein-ligand cofolding pose sampling Boltz AlphaFold3",
+    "Boltz-2 structure and binding affinity prediction model",
+    "PLINDER protein ligand interaction dataset benchmark evaluation split"
+  ],
+  "research_study_list": [
+    {
+      "title": "Have protein-ligand cofolding methods moved beyond memorisation?",
+      "meta_data": {
+        "doi": "10.1038/s41594-026-01797-5",
+        "venue": "Nature Structural & Molecular Biology",
+        "volume": "33",
+        "pages": "782-794",
+        "published_date": "2026",
+        "peer_review_status": "yes",
+        "access_type": "free",
+        "authors": [
+          "Peter Skrinjar",
+          "Jerome Eberhardt",
+          "Gerardo Tauriello",
+          "Torsten Schwede",
+          "Janani Durairaj"
+        ]
+      }
+    },
+    {
+      "title": "Several multiple sequence alignment perturbation methods enhance AlphaFold3 sampling of alternative protein states",
+      "meta_data": {
+        "doi": "10.64898/2026.04.02.716037",
+        "venue": "bioRxiv",
+        "published_date": "2026-04-03",
+        "peer_review_status": "no",
+        "access_type": "free",
+        "authors": [
+          "Samuel Eriksson Lidbrink",
+          "Ivan Nissen",
+          "Jonathan Kenichi Ahrlind",
+          "Rebecca J Howard",
+          "Erik Lindahl"
+        ]
+      }
+    },
+    {
+      "title": "Improving AlphaFold3 by Engineering MSA and Template Inputs",
+      "meta_data": {
+        "doi": "10.64898/2026.04.22.720119",
+        "venue": "bioRxiv",
+        "published_date": "2026-04-22",
+        "peer_review_status": "no",
+        "access_type": "free",
+        "authors": [
+          "Pawan Neupane",
+          "Jian Liu",
+          "Jianlin Cheng"
+        ]
+      }
+    },
+    {
+      "title": "State-aware protein-ligand complex prediction using AlphaFold3 with purified sequences",
+      "meta_data": {
+        "arxiv_id": "2506.00147",
+        "published_date": "2025-05-30",
+        "peer_review_status": "no",
+        "access_type": "free",
+        "authors": [
+          "Enming Xing",
+          "Junjie Zhang",
+          "Shen Wang",
+          "Xiaolin Cheng"
+        ]
+      }
+    },
+    {
+      "title": "Assessing the potential of deep learning for protein-ligand docking",
+      "meta_data": {
+        "doi": "10.1038/s42256-025-01160-1",
+        "arxiv_id": "2405.14108",
+        "venue": "Nature Machine Intelligence",
+        "published_date": "2025-12-31",
+        "peer_review_status": "yes",
+        "access_type": "free",
+        "authors": [
+          "Alex Morehead",
+          "Nabin Giri",
+          "Jian Liu",
+          "Pawan Neupane",
+          "Jianlin Cheng"
+        ]
+      }
+    },
+    {
+      "title": "Structure Modeling Protocols for Protein Multimer and RNA in CASP16 With Enhanced MSAs, Model Ranking, and Deep Learning",
+      "meta_data": {
+        "doi": "10.1002/prot.70033",
+        "venue": "Proteins Structure Function and Bioinformatics",
+        "published_date": "2025-08-01",
+        "peer_review_status": "yes",
+        "access_type": "free",
+        "authors": [
+          "Yuki Kagaya",
+          "Tsukasa Nakamura",
+          "Jacob Verburgt",
+          "Anika Jain",
+          "Genki Terashi",
+          "Daisuke Kihara"
+        ]
+      }
+    },
+    {
+      "title": "Boltz-2: Towards Accurate and Efficient Binding Affinity Prediction",
+      "meta_data": {
+        "doi": "10.1101/2025.06.14.659707",
+        "venue": "bioRxiv",
+        "published_date": "2025-06-18",
+        "peer_review_status": "no",
+        "access_type": "free",
+        "citation_count": 526,
+        "authors": [
+          "Saro Passaro",
+          "Gabriele Corso",
+          "Jeremy Wohlwend",
+          "Mateo Reveiz",
+          "Stephan Thaler",
+          "Tommi Jaakkola",
+          "Regina Barzilay"
+        ]
+      }
+    },
+    {
+      "title": "PLINDER: The protein-ligand interactions dataset and evaluation resource",
+      "meta_data": {
+        "doi": "10.1101/2024.07.17.603955",
+        "venue": "bioRxiv",
+        "published_date": "2024-07-17",
+        "peer_review_status": "no",
+        "access_type": "free",
+        "citation_count": 72,
+        "authors": [
+          "Janani Durairaj",
+          "Yusuf Adeshina",
+          "Zhonglin Cao",
+          "Xavier Robin",
+          "Gabriel Studer",
+          "Gerardo Tauriello",
+          "Torsten Schwede",
+          "Luca Naef"
+        ]
+      }
+    }
+  ],
+  "research_hypothesis": {
+    "open_problems": "Runs N' Poses は 2,600 系の学習カットオフ後ベンチマークで、4つの co-folding 手法が学習データ中のリガンド配座を大きく記憶していることを示した。著者は各系につき25構造（5 seed × 5 diffusion sample）を生成した上で、「正解ポーズをサンプリングすること自体が主ボトルネックである」と明言し、さらに「複数シードは推論時に有用でない」と報告している。つまり現行の 25 構造という推論予算は、5つの独立なシードに配っても実質的な多様性を生んでいない。\n\nここに、誰も測っていない空白がある。25 という予算そのものは所与として、その配り方を変えたらどうなるのか。上流の MSA を振る操作が AlphaFold3 の代替立体構造状態のサンプリングを改善することは Lidbrink らが 107 タンパク質で示しているが、対象はリガンドを含まないタンパク質のみで、指標は Cα の TM-score であり、しかも各手法 1,000 構造以上を生成しているため推論予算が揃っていない。Neupane らは MSA とテンプレートの多様化がタンパク質-リガンド複合体の ligand RMSD を改善すると報告しているが、MSA-テンプレート組合せごとに 25〜100 モデルを生成してプールしているため、多様性の効果とサンプル数の効果が原理的に分離できない。対象も CASP16 の 4 つの superligand ターゲット由来 286 ペアに限られ、lDDT-PLI での評価も学習データ類似度による層別もない。\n\nしたがって「MSA を多様化すると当たりやすくなる」という報告は複数あるにもかかわらず、**同じ推論予算の下で MSA 多様性が拡散サンプルより有利かどうかは未検証**である。予算を揃えない比較は「より多く計算すればより当たる」という自明な結論と区別がつかない。実務家が直面するのは常に固定予算の配分問題なので、この区別が意思決定にとって本質的である。\n\nさらに未解決の交絡がある。Runs N' Poses はタンパク質側が既によく当たっていること（LDDT-LP > 0.8 が約 91%、結合ポケット同定も律速ではないと著者が明記）を示している。MSA 摂動はタンパク質側の共進化信号に作用する操作なので、既に正しく当たっている部分を揺らすだけで、外している当のリガンド配座には届かない可能性がある。この「上流のレバーは下流の失敗に届くか」という問いは、先行研究がリガンドを見ていないか予算を揃えていないため、まだ答えられていない。",
+    "method": "変更は手法の学習にも損失関数にも触れない。**触るのは推論時の予算配分規則というシステムの挙動そのもの**であり、モデルの重みは Boltz-2 の公開版を一切変更せずに用いる。\n\n先行研究（Runs N' Poses）の推論手続きは「1 本の MSA を作り、そこから 25 構造を拡散サンプリングする」である。これを最小限に書き換え、**25 という総予算を固定したまま、その内訳だけを変える 3 つのアームを定義する**。\n\n1. **baseline（現行の配分）**: 1 MSA × 25 拡散サンプル。Runs N' Poses の手続きをそのまま再現する対照。\n2. **proposed（上流に配る）**: 5 つの MSA 変種 × 各 5 拡散サンプル = 25 構造。MSA-search NIM で 1 本の完全な MSA を生成し、そこから決定論的なシード付き確率的サブサンプリングで 5 つの深度違いの変種を作る。MSA 生成そのものは 1 回だけなので、追加コストは検索ではなくサブサンプリングのみである。\n3. **lineage（別系統に配る）**: Boltz-2 で 20 構造 + DiffDock で 5 ポーズ = 25 構造。DiffDock は拡散ドッキングであり co-folding とはアーキテクチャ系統が異なる。DiffDock には Boltz-2 の top-ranked 予測受容体を渡す（結晶構造の受容体を渡すと予測条件が変わり比較にならないため）。\n\n**この設計の核心は予算の統制にある。**3 アームすべてがちょうど 25 構造を出し、oracle@25 という同一の統計量で比較される。先行研究が分離できなかった「多様性の効果」と「サンプル数の効果」が、ここでは構成上分離される。差が出れば、それは計算量ではなく配分に由来する。\n\n評価は全アームで OpenStructure の lDDT-PLI に統一する。自前実装ではなく本家 OpenStructure を呼ぶ理由は、`add_mdl_contacts=True`（OST の既定であり plinder.eval も使用）がモデル側の作る偽の接触を罰する一方、これを実装しない素朴な実装は退化した予測に対して系統的に甘くなるためである。設定は plinder.eval に合わせ `substructure_match=True`、`lddt_pli_radius=6.0`、閾値 `[0.5, 1.0, 2.0, 4.0]` とする。",
+    "experimental_setup": "**ベンチマークと母集団。** Runs N' Poses（Zenodo 10.5281/zenodo.18366081）を用いる。Boltz-2 は他の 4 手法と学習カットオフが異なる（2023-06-01）ため、類似度は Boltz-2 自身のカットオフで計算された `sucos_shape_pocket_qcov_2023` 列を使う。母集団は**この類似度で 20–60 ビンに入る単一リガンド系**とする。20 未満を除くのは、そこでは全手法が一様に失敗して配分の差が現れないため。60 以上を除くのは、記憶によって既にほぼ解けており天井効果が出るため。類似度ビンの境界は著者の `plotting.py` から取る（[0, 20, 30, 40, 50, 60, 70, 80, 100]）。\n\n**データ。** Zenodo から取得するのは `inputs.json`（2.2 MB、系ごとの配列と SMILES）、`ground_truth.tar.gz`（414 MB、正解 CIF/SDF）、`annotations.csv`（3.6 MB、類似度）の 3 つのみ。39.5 GB の `prediction_files.tar.gz` と 46 GB の `msa_files.tar.gz` には触らない。MSA は MSA-search NIM で生成するため後者は不要である。\n\n**実行環境。** RIKYU（Seyval BYO、NVIDIA GB200、aarch64）。3 つの NIM（Boltz-2、DiffDock、MSA-search）はいずれも health.api.nvidia.com のホスト型エンドポイントを計算ノードから呼ぶ。OpenStructure 2.11.1 はコンテナイメージ内に micromamba で別 prefix として焼き込み、subprocess 経由で JSON をやり取りする（CLI 契約が uv 側を Python 3.11 に固定する一方、bioconda の OpenStructure 2.11.1 は aarch64 では Python 3.12 を要求するため同居できない）。\n\n**比較。** baseline を対照とし、proposed と lineage をそれぞれ**対応のある差**で比較する。同一の系に対して 3 アームすべてを実行するので、系の難易度は対応によって相殺される。信頼区間は系を単位とした 1,000 回のブートストラップで求める。\n\n**段階実行。** sanity（3 系）でパイプラインの疎通と `diffusion_samples=25` の所要時間を実測し、pilot（20 系）で対応差の標準偏差を測って検出力を確定してから、full（母集団全体）に進む。\n\n**事前に凍結した Go/No-Go。** proposed 対 baseline の oracle@25 lDDT-PLI の対応差について**閾値 +0.03**。ブートストラップ 95% 区間が 0 を跨いだ場合は有意差なしと判定し、その旨を報告する。lineage アームについては PoseBench が既に「DL co-folding は DL docking baseline を概ね上回る」と報告しているため**負の結果を期待値とする**が、予算配分の問いには答えるため実施する。\n\n**欠測の扱い。** OpenStructure がスコアを返さない系（予備検証で 14 系中 2 系）は、欠測として明示的に記録し、**全アームで同一に除外する**。対応設計なのでこの除外はバイアスを生まない。黙って落とさない。",
+    "primary_metric": "oracle_lddt_pli",
+    "supporting_metrics": [
+      "success_rate",
+      "top_ranked_lddt_pli",
+      "ligand_rmsd",
+      "unique_pose_modes"
+    ],
+    "experimental_code": "# 予算を揃えた 3 アーム。総数はすべて 25 に固定される。\nBUDGET = 25\n\ndef arm_baseline(system, msa):\n    # 現行の配分: 1 MSA から 25 構造\n    return boltz2(system, msa=msa, diffusion_samples=25)\n\ndef arm_proposed(system, msa):\n    # 上流に配る: 5 変種 x 5 サンプル\n    out = []\n    for rank, variant in enumerate(subsample_msa(msa, n_variants=5, seed=0)):\n        out += boltz2(system, msa=variant, diffusion_samples=5)\n    return out\n\ndef arm_lineage(system, msa):\n    # 別系統に配る: co-folding 20 + docking 5\n    cofold = boltz2(system, msa=msa, diffusion_samples=20)\n    receptor = strip_ligand(best_by_confidence(cofold))\n    return cofold + diffdock(receptor, system.smiles, num_poses=5)\n\n# 主指標は 25 本中の最良。予算が揃っているので直接比較できる。\ndef oracle_lddt_pli(poses, reference):\n    return max(ost_lddt_pli(p, reference) for p in poses)",
+    "expected_result": "**主指標（oracle_lddt_pli）。** baseline の oracle@25 lDDT-PLI は 20–60 ビンで概ね 0.55〜0.70 の範囲に入ると予想する。proposed がこれを上回るとして、上回り幅は +0.01 から +0.04 程度と見込む。凍結した閾値 +0.03 を超えるかどうかは五分五分と考えており、**この予測の不確かさ自体が実験の動機である**。\n\n予測が割れる理由は明確で、Runs N' Poses はタンパク質側が既によく当たっている（LDDT-LP > 0.8 が約 91%）ことを示しているためである。MSA 摂動はタンパク質側の共進化信号に効く操作なので、外しているリガンド配座に届かない可能性が構造的に存在する。したがって **+0.03 に届かない結果も十分にありうる**と事前に述べておく。届かなかった場合、それは「上流のタンパク質側のレバーは下流のリガンド側の失敗に届かない」という明確な否定であり、著者自身が示したシード無効という否定と並ぶ 2 つ目のデータ点になる。\n\n**lineage アーム。** baseline に対して −0.02 から +0.01 程度、すなわち改善しないか悪化すると予想する。PoseBench の報告と、DiffDock が予測受容体に対して劣化するという既知の性質から、これが期待値である。\n\n**補助指標。** success_rate（lDDT-PLI > 0.8 かつ ligand_rmsd < 2 Å）は baseline で 20–60 ビンにおいて 35〜55% 程度。top_ranked_lddt_pli は oracle との差として 0.04〜0.08 程度下回る（Runs N' Poses の AF3 で 0.774 対 0.830 という既知の差に対応する）。unique_pose_modes は proposed が baseline を上回ることを予想する。これは**機構が意図通り作動したかを確かめる指標**であり、仮に oracle が改善しなくても proposed のポーズ多様性が増えていれば「多様性は増えたが正解方向には向かわなかった」と切り分けられ、増えていなければ「MSA サブサンプリングの摂動が弱すぎた」と切り分けられる。この 2 つは異なる結論なので、区別できるようにしておく。",
+    "expected_conclusion": "この最小の変更が持つ実務的価値は、**固定予算下での配分という、実務家が実際に直面する形で問いを立て直す**ことにある。「MSA を多様化すると精度が上がる」という報告は既に複数あるが、いずれも計算量を増やしながら測っているため、「より多く計算すれば当たる」という自明な主張と区別がつかない。総数を 25 に固定した対照を置くだけで、配分の効果が計算量の効果から分離される。\n\n結果がどちらに転んでも情報がある点が、この設計の要である。proposed が閾値を超えれば、追加の計算資源を一切使わずに co-folding の当たり率を上げる配分規則が得られ、すぐに実務へ移せる。超えなければ、「上流のタンパク質側の摂動は下流のリガンド配座の失敗に届かない」という否定的な知見になり、Runs N' Poses の著者が示したシード無効の結果と合わせて、**サンプリング側のボトルネックがタンパク質表現ではなくリガンド配座の生成そのものにあること**を絞り込む。どちらの場合も、次にどこへ資源を投じるべきかという問いに対して、公開データと公開モデルだけで再現可能な形の答えを与える。\n\nなお本研究が主張できるのは固定推論予算下での配分戦略の比較であって、新しい co-folding モデルではない。Runs N' Poses における配分の比較としては述べられるが、新たな SOTA モデルとしては述べられない。"
+  },
+  "experiment_history": {
+    "cycles": [
+      {
+        "experimental_design": {
+          "experiment_summary": "**モデルは何をするのか。** この実験でモデルが行うタスクは、タンパク質のアミノ酸配列とリガンドの SMILES だけを入力として、両者が結合した複合体の全原子3次元座標を生成することである（co-folding）。学習も微調整も一切行わない。Boltz-2 の公開重みをホスト型 NIM 経由でそのまま推論に用い、**変えるのは推論時に25構造という予算をどう配るかだけ**である。\n\n**なぜ予算を固定するのか。** 先行研究は「MSA を多様化すると精度が上がる」と報告しているが、いずれも MSA の組合せごとにモデルを追加生成してプールしているため、多様性の効果と単なる計算量増加の効果が分離できていない。本実験は3つのアームすべてがちょうど25構造を出すよう構成することで、この交絡を設計段階で消す。差が出れば、それは計算量ではなく配分に由来する。\n\n**ワークフロー。** 系ごとに次を実行する。(1) Zenodo から `inputs.json`（配列と SMILES）、`ground_truth.tar.gz`（正解構造）、`annotations.csv`（類似度）を取得する。(2) MSA-search NIM で完全な MSA を1本だけ生成する（全アーム共通の入力とし、MSA 生成コストの差がアーム間の交絡にならないようにする）。(3) 3アームそれぞれで25構造を生成する。(4) 全構造を OpenStructure の LDDTPLIScorer で採点する。(5) 系を単位としたブートストラップで対応差と信頼区間を求める。\n\n**3つのアームの内訳。** baseline は1本の MSA から拡散サンプル25本（Runs N' Poses の手続きの再現）。proposed は MSA を確率的サブサンプリングして深度違いの変種を5つ作り、各変種から5本ずつ（合計25本）。lineage は Boltz-2 から20本を取り、その中の最高信頼度モデルからリガンドを除いた受容体を DiffDock に渡して5ポーズを得る（合計25本）。\n\n**実行環境への適合。** 3つの生成器はすべて `health.api.nvidia.com` のホスト型 NIM であり、GPU 上でのモデル重みのロードは発生しない。したがって計算ノード側の作業は HTTP 呼び出し、mmCIF/SDF のパース、幾何計算だけの CPU 処理であり、GB200 の185 GB VRAM は実質使わない。aarch64 で wheel が存在しない依存（triton、gemmi 等）を持ち込む必要がないのはこのためである。OpenStructure は conda にしか無いので Dockerfile 内の micromamba で `/opt/ost` という独立した prefix に焼き込み、`subprocess` で JSON をやり取りする（CLI 契約が uv 側を Python 3.11 に固定する一方、bioconda の OpenStructure 2.11.1 は aarch64 では Python 3.12 を要求するため同一環境に同居できない）。グループディレクトリが read-only で run をまたぐ永続キャッシュを置けないため、毎 run のデータ取得は約470 MB に収まる3ファイルのみに限定した。NIM 呼び出しはネットワーク律速なので8並列のスレッドプールで発行する。\n\n**規模の段階制御。** sanity は3系（疎通確認と `diffusion_samples=25` の所要時間実測）、pilot は20系（対応差の標準偏差を測り検出力を確定）、full は母集団全体（`sucos_shape_pocket_qcov_2023` で20–60ビンに入る単一リガンド系）とする。sanity と pilot で実測した1系あたりの所要時間から full の総時間を見積もり、Slurm の walltime に収まることを確認してから full を投入する。",
+          "evaluation_metrics": [
+            {
+              "name": "oracle_lddt_pli",
+              "description": "**主指標。** 1つの系に対してアームが生成した25構造それぞれの lDDT-PLI を計算し、その**最大値**を取る。すなわち oracle@25 = max_i lDDT-PLI(pose_i, reference)。\n\n**正解判定と計算方法。** lDDT-PLI は OpenStructure の `LDDTPLIScorer` で計算する。自前実装は用いない。設定は plinder.eval に合わせ `substructure_match=True`、`add_mdl_contacts=True`、`lddt_pli_radius=6.0`、距離閾値 `[0.5, 1.0, 2.0, 4.0]` とする。`add_mdl_contacts=True` は OST の既定値であり、これを実装しない素朴な実装は「参照側の接触の再現率」しか見ないためポケット中心に潰れた退化予測に対して系統的に甘くなる（予備検証で最大0.31の乖離を確認）。値域は 0〜1 で、**高いほど良い**。\n\n**タスク適合性。** 本研究の問いは「25枠の配分を変えると正解ポーズを引き当てられるようになるか」であり、これはサンプリング能力の問いである。したがってランキングの巧拙を含む top-1 ではなく、候補集合の中に正解が含まれているかを測る oracle が適切である。ランキングの寄与は補助指標 `top_ranked_lddt_pli` として分けて報告する。\n\n**比較方法。** baseline との**対応のある差**を系ごとに取り、系を単位とした1,000回のブートストラップで95%信頼区間を求める。同一系に全アームを適用するため系の難易度は対応によって相殺される。\n\n**可視化。** (1) 類似度ビン別のアーム別 oracle@25 の折れ線と信頼区間の帯、(2) proposed 対 baseline の対応差のヒストグラムに0の垂線とマージン +0.03 の垂線を重ねたもの、(3) 系ごとの baseline 対 proposed の散布図に y=x を引いたもの。"
+            },
+            {
+              "name": "success_rate",
+              "description": "**補助指標。** 25構造のうち少なくとも1本が成功条件を満たす系の割合。成功条件は Runs N' Poses の著者定義に完全に従い、**lDDT-PLI > 0.8 かつ ligand RMSD < 2 Å の両方**を満たすこととする。\n\n**計算方法。** success_rate = (少なくとも1本が成功条件を満たす系の数) / (採点に成功した系の数)。二値の割合なので信頼区間はブートストラップではなく Wilson 法でも求まるが、他指標との一貫性のためブートストラップで統一する。値域 0〜1、**高いほど良い**。\n\n**タスク適合性。** lDDT-PLI 単独では「接触は概ね合っているが配座が違う」ケースを成功と数えてしまう。著者が RMSD との連言で成功を定義しているのはこのためで、同じ定義を使うことで本研究の数字が Runs N' Poses の公表値と直接比較できる。\n\n**可視化。** 類似度ビン別の棒グラフ（アームごとに色分け、誤差棒付き）。"
+            },
+            {
+              "name": "top_ranked_lddt_pli",
+              "description": "**補助指標。** 各アームの25構造を、そのアーム自身の信頼度スコア（Boltz-2 の confidence_score、DiffDock のポーズについては position_confidence をアーム内で順位正規化した値）で並べ、**第1位の構造の lDDT-PLI** を取る。\n\n**計算方法とタスク適合性。** oracle との差 (oracle_lddt_pli − top_ranked_lddt_pli) が、そのアームにおいて**ランキングが取り逃している量**である。Runs N' Poses では AF3 でこの差が 0.830 − 0.774 = 0.056 であった。配分を変えることで候補集合が広がっても、ランキングがそれを拾えなければ実務上の利得にならない。この指標はサンプリング側の改善とランキング側の限界を分離して読むために必要である。値域 0〜1、**高いほど良い**。\n\n**注意。** lineage アームでは2つの異なる生成器の信頼度を1つの順序に統合する必要がある。Runs N' Poses が「信頼度スコアは手法間で比較できない」（最適閾値が AF3 0.92、Boltz-1 0.95、Chai-1 0.75、Protenix 0.99 と異なる）と明示的に示しているため、生スコアの大小比較は行わず、**各生成器内でのパーセンタイル順位に変換してから統合する**。この処理自体が結果に影響するため、生スコア統合版も併記する。\n\n**可視化。** アームごとの oracle と top-ranked を並べた対の棒グラフ（両者の差が視覚的に読めるようにする）。"
+            },
+            {
+              "name": "ligand_rmsd",
+              "description": "**補助指標。** 予測リガンドと正解リガンドの重原子間の対称性補正済み RMSD。25構造中の最小値（oracle と対応）を系の代表値とする。\n\n**計算方法。** OpenStructure の SCRMSD（symmetry-corrected RMSD）を用いる。分子グラフの自己同型で最小化するため、環の反転などで関係づく化学的に等価なポーズが不当に大きな距離を持つことを防ぐ。**この補正を省くと成功ポーズどうしの距離だけが選択的に膨らみ、検証したい仮説に不利なバイアスがかかる**（予備検証で確認済み）。単位は Å、値域 0 以上、**低いほど良い**。\n\n**必須の前処理。** ホモ二量体ではリガンドがどちらのコピーに入るかがモデルごとに異なり、固定フレームで重ね合わせると70 Å以上離れることがある。**各モデルについてリガンドが実際に入っているチェーンを特定してから重ね合わせる。**健全性チェックとして、両方とも正解から2 Å以内にある構造どうしの平均 RMSD が4 Åを超えたらパイプラインが壊れていると判定する。\n\n**タスク適合性。** lDDT-PLI が接触パターンの再現を測るのに対し、RMSD は配座そのものの一致を測る。両方を報告するのは著者の成功定義が両者の連言であるため。\n\n**可視化。** アーム別の RMSD 累積分布関数（2 Å に垂線を引き、成功率が読めるようにする）。"
+            },
+            {
+              "name": "unique_pose_modes",
+              "description": "**機構確認指標。** 1つの系の25構造を、対称性補正済みリガンド RMSD 2 Å を閾値とした階層的クラスタリング（complete linkage）にかけたときのクラスタ数。\n\n**計算方法。** 25×25 の対称性補正済み RMSD 行列を作り、距離2 Åで切って得られるクラスタ数を数える。値域 1〜25、**この指標には「良し悪し」がない**。\n\n**なぜ必要か。** これは性能指標ではなく**機構が意図通り作動したかを確かめるための指標**であり、主指標が動かなかった場合に原因を切り分けるために不可欠である。proposed で oracle が改善しなかったとき、2つの全く異なる説明がありうる。(a) unique_pose_modes が baseline より増えている場合、「多様性は確かに増えたが、増えた方向が正解の方向ではなかった」。これは MSA というレバーがリガンド配座に届かないことを意味する。(b) 増えていない場合、「MSA サブサンプリングによる摂動がそもそも弱すぎて、モデルの出力が変わらなかった」。これは実装ないしパラメータの問題であり、より強い摂動（カラムマスク等）で再試行すべきという結論になる。**この2つは全く異なる結論なので、区別できないまま否定的結果を報告してはならない。**\n\n**可視化。** アーム別の unique_pose_modes の分布（バイオリンプロット）と、unique_pose_modes を横軸・oracle 対応差を縦軸に取った散布図。"
+            },
+            {
+              "name": "scoring_coverage",
+              "description": "**健全性指標。** 採点を試みた構造のうち OpenStructure が有限のスコアを返した割合、および系単位で少なくとも1本が採点できた系の割合。\n\n**なぜ必要か。** 予備検証で14系中2系（`7x81`、`7er2`、いずれも単一 proper リガンド）が**エラーを出さずに黙ってスコアを返さない**ことが判明している。原因の1つは予測リガンドが `LIG_*` という名前で化合物ライブラリに存在せず結合情報が付かないため OST が disconnected graph と判断することで、これは `conop.HeuristicProcessor` で距離から結合を割り当てることで解決したが、残る2系は未解決である。**失敗が例外にならないため、この指標を明示的に出さないと「採点できなかった系が黙って消える」という形でバイアスが混入する。**\n\n**扱い方。** 採点できなかった系は欠測として記録し、**全アームで同一に除外する**。対応設計なのでこの除外自体はバイアスを生まないが、除外数と除外された系の ID は必ず報告する。カバレッジがアーム間で有意に異なる場合、それ自体が結果として意味を持つ（例えば proposed が退化構造を多く出していれば採点不能率が上がる）ため、アーム別に集計する。\n\n**可視化。** アーム別のカバレッジの棒グラフと、除外された系の一覧表。"
+            }
+          ],
+          "models_to_use": [
+            "Boltz-2 v2.0.3 (hosted NVIDIA NIM `mit/boltz2`; パラメータ数は非公開。学習カットオフ 2023-06-01。重みは変更せず推論のみに使用)"
+          ],
+          "datasets_to_use": [
+            "Runs N' Poses (Zenodo 10.5281/zenodo.18366081; 2,600 systems / 3,047 non-ion non-artifact ligands、2021-09-30 以降の PDB エントリ。本実験では sucos_shape_pocket_qcov_2023 で 20–60 ビンに入る単一リガンド系のみを使用)"
+          ],
+          "proposed_method": {
+            "method_name": "MSA-Diversified Budget Allocation (proposed)",
+            "description": "25構造という固定推論予算を、1本の MSA からの拡散サンプル25本ではなく、**5つの MSA 変種 × 各5拡散サンプル**に配分する。MSA-search NIM で完全な MSA を1本だけ生成し、そこから決定論的シード付きの確率的サブサンプリングで深度の異なる5変種（保持率 100%, 50%, 25%, 12.5%, 6.25% を目安とし、クエリ配列は常に保持する）を構成する。各変種を Boltz-2 の `polymers[].msa` に a3m 形式で与え、`diffusion_samples=5` で推論する。モデルの重み、学習、損失関数には一切触れない。MSA 検索自体は1回しか行わないため、追加の計算コストはサブサンプリング（ローカルの文字列処理）のみである。",
+            "training_config": null,
+            "optuna_config": {
+              "enabled": false,
+              "n_trials": 0,
+              "search_spaces": null
+            }
+          },
+          "comparative_methods": [
+            {
+              "method_name": "Single-MSA Diffusion Sampling (baseline)",
+              "description": "Runs N' Poses の推論手続きをそのまま再現する対照。MSA-search NIM が生成した完全な MSA を1本だけ与え、`diffusion_samples=25` で一度に25構造を生成する。proposed と完全に同一の MSA を入力とするため、両者の差は**サブサンプリングによる多様化の有無だけ**に帰着する。`recycling_steps=3`、`sampling_steps=50` は両アーム共通に固定する。この設計により、MSA の品質差・検索の揺らぎ・ハイパーパラメータの差はすべて交絡から除かれる。",
+              "training_config": null,
+              "optuna_config": {
+                "enabled": false,
+                "n_trials": 0,
+                "search_spaces": null
+              }
+            },
+            {
+              "method_name": "Cross-Lineage Allocation: Boltz-2 + DiffDock (lineage)",
+              "description": "25枠を**アーキテクチャ系統をまたいで**配分する対照。Boltz-2 に完全な MSA を与えて `diffusion_samples=20` で20構造を生成し、その中で confidence_score が最高の構造からリガンドを除去して受容体（ATOM レコードのみ）を取り出す。この予測受容体と系のリガンド SMILES を DiffDock NIM に渡し `num_poses=5` で5ポーズを得る。合計25構造。DiffDock は拡散ドッキングであり co-folding とは学習パラダイムも入力表現も異なるため、4つの co-folding 手法が共有する系統内に相補性が閉じているかどうかを検定できる。**結晶構造の受容体は渡さない**（渡すと予測条件が変わり比較が成立しないため）。ただし受容体品質の交絡を読めるようにするため、結晶受容体版を上限参照として別途少数系で併記する。PoseBench が「DL co-folding は DL docking baseline を概ね上回る」と報告しているため、このアームは**負の結果を期待値とする**が、予算配分の問いには答えるため実施する。",
+              "training_config": null,
+              "optuna_config": {
+                "enabled": false,
+                "n_trials": 0,
+                "search_spaces": null
+              }
+            }
+          ],
+          "compute_environment": {
+            "os": "Linux",
+            "arch": "aarch64",
+            "cpu_cores": 144,
+            "ram_gb": 1720,
+            "gpu_type": "NVIDIA GB200",
+            "gpu_count": 1,
+            "gpu_memory_gb": 185,
+            "storage_type": "nvme",
+            "storage_gb": 1016,
+            "python_version": "3.11",
+            "description": "RIKYU (理研) の Seyval BYO Slurm クラスタ。compute_id=byo:4f616e40-bb56-45aa-95b5-38fa4d2d0b8b、partition=gpu、gpus_per_node=4、max_resource_count=4、max_time=4-00:00:00。コンテナは Kaniko で ECR にビルドされ計算ノードで Apptainer SIF として実行されるため apptainer/srun の入れ子は不可。グループディレクトリは read-only なので run をまたぐ永続キャッシュは置けない。3つの NIM (Boltz-2 / DiffDock / MSA-search) は health.api.nvidia.com のホスト型エンドポイントで、計算ノードから到達可能。GPU は実質使わず、局所処理は構造パースと採点のみ。"
+          }
+        },
+        "run_stage": "pilot"
+      }
+    ]
+  }
+}
