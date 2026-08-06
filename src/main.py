@@ -17,7 +17,16 @@ import sys
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from .preprocess import select_systems
+# The executor's analyzer has generated both `python -m src.main` and
+# `python src/main.py` for this same repository across successive analyses.
+# The first makes this a package module and the relative import works; the
+# second runs it as a script, where there is no parent package and only the
+# flat import resolves. Supporting both costs three lines and removes a
+# failure mode that depends on which spelling the analyzer happens to emit.
+try:
+    from .preprocess import select_systems
+except ImportError:  # executed as a script, not as a package module
+    from preprocess import select_systems  # type: ignore[no-redef]
 
 log = logging.getLogger(__name__)
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import logging
 import os
 import random
@@ -21,7 +22,10 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-from .model import OpenStructureScorer
+try:
+    from .model import OpenStructureScorer
+except ImportError:  # executed as a script, not as a package module
+    from model import OpenStructureScorer  # type: ignore[no-redef]
 
 log = logging.getLogger(__name__)
 
@@ -224,25 +228,87 @@ def _polymers(sequences: dict[str, str], msa_by_seq: dict[str, str]) -> list[dic
     return out
 
 
-def boltz2(sequences: dict[str, str], msa_by_seq: dict[str, str], smiles: str,
-           n_samples: int, cfg) -> list[dict]:
+# Chunk sizes tried, largest first, when a request fails. Measured on system
+# 8pl6 (a 597x2-residue homodimer): diffusion_samples=25 fails every time with
+# the server-side 'confidence_score' crash, while 10, 5 and 1 all succeed. The
+# trigger is the batch size on large complexes, not the system itself.
+_CHUNK_LADDER = (10, 5, 1)
+
+
+def _boltz2_call(sequences, msa_by_seq, smiles, n, cfg,
+                 retries: int = 5) -> list[dict]:
     resp = nim_post(BOLTZ2_URL, {
         "polymers": _polymers(sequences, msa_by_seq),
         "ligands": [{"id": "L1", "smiles": smiles}],
         "recycling_steps": int(cfg.boltz2.recycling_steps),
         "sampling_steps": int(cfg.boltz2.sampling_steps),
-        "diffusion_samples": int(n_samples),
-    })
+        "diffusion_samples": int(n),
+    }, retries=retries)
     structures = resp.get("structures") or []
     confidences = resp.get("confidence_scores") or []
-    poses = []
-    for i, struct in enumerate(structures):
-        poses.append({
-            "source": "boltz2",
-            "cif": struct["structure"],
-            "confidence": float(confidences[i]) if i < len(confidences) else None,
-        })
-    return poses
+    return [
+        {"source": "boltz2", "cif": s["structure"],
+         "confidence": float(confidences[i]) if i < len(confidences) else None}
+        for i, s in enumerate(structures)
+    ]
+
+
+def boltz2(sequences: dict[str, str], msa_by_seq: dict[str, str], smiles: str,
+           n_samples: int, cfg) -> list[dict]:
+    """Generate n_samples structures, splitting the request if the NIM chokes.
+
+    WHY THIS MATTERS MORE THAN IT LOOKS. The baseline arm asks for all 25
+    samples in one call; the proposed arm asks for 5 samples five times. The
+    crash above is triggered by large batches on large complexes, so without
+    this fallback the baseline would fail on exactly the biggest systems while
+    the proposed arm sailed through. The systems lost would not be a random
+    subset -- they would be the large ones, which is where the effect under
+    test lives. That is not a smaller experiment, it is a rigged one.
+
+    Splitting is scientifically inert: every sub-call uses the identical MSA
+    and identical sampling parameters, so the structures come from the same
+    conditional distribution. Only the API batching changes, and the per-system
+    call count is recorded so the difference stays auditable.
+    """
+    n_samples = int(n_samples)
+    ladder = [n_samples] + [c for c in _CHUNK_LADDER if c < n_samples]
+
+    for step, size in enumerate(ladder):
+        # Retrying hard at a batch size that fails deterministically is pure
+        # waste when a smaller size is waiting: the large-batch crash is
+        # reproducible, so probe briefly and drop down. Only the last rung
+        # gets the full retry budget, because there is nowhere left to fall.
+        retries = 5 if step == len(ladder) - 1 else 2
+        poses: list[dict] = []
+        remaining = n_samples
+        failed = False
+        while remaining > 0:
+            take = min(size, remaining)
+            try:
+                got = _boltz2_call(sequences, msa_by_seq, smiles, take, cfg,
+                                   retries=retries)
+            except NimError as exc:
+                log.warning("boltz2 failed at diffusion_samples=%d (%s); "
+                            "falling back to a smaller batch", take, exc)
+                failed = True
+                break
+            if not got:
+                failed = True
+                break
+            poses += got
+            remaining -= len(got)
+        if not failed and remaining <= 0:
+            if size != n_samples:
+                log.info("boltz2 produced %d structures via batches of %d",
+                         len(poses), size)
+            for p in poses:
+                p["batch_size"] = size
+            return poses[:n_samples]
+
+    raise NimError(
+        f"boltz2 could not produce {n_samples} structures for this system at "
+        f"any batch size in {ladder}"
+    )
 
 
 def diffdock(receptor_pdb_path: str, smiles: str, n_poses: int, cfg) -> list[dict]:
@@ -282,6 +348,19 @@ def diffdock(receptor_pdb_path: str, smiles: str, n_poses: int, cfg) -> list[dic
 # Arms
 
 
+def _calls_used(poses: list[dict]) -> int:
+    """How many API calls a batch of poses actually took.
+
+    Not always one: a system whose large-batch request crashes is retried in
+    smaller batches, and the paper reports wall-clock cost per arm, so the
+    record has to reflect the calls really made rather than the calls intended.
+    """
+    if not poses:
+        return 0
+    size = poses[0].get("batch_size") or len(poses)
+    return math.ceil(len(poses) / max(1, size))
+
+
 def run_arm(system: dict, cfg, work_dir: str, scorer: OpenStructureScorer,
             msa_cache: str) -> dict:
     """Generate this arm's `budget` structures for one system and score them."""
@@ -304,7 +383,7 @@ def run_arm(system: dict, cfg, work_dir: str, scorer: OpenStructureScorer,
     if arm == "baseline":
         poses = boltz2(system["sequences"], msa_by_seq, system["smiles"],
                        budget, cfg)
-        n_calls = 1
+        n_calls = _calls_used(poses)
 
     elif arm == "proposed":
         n_variants = int(cfg.run.n_msa_variants)
@@ -320,13 +399,13 @@ def run_arm(system: dict, cfg, work_dir: str, scorer: OpenStructureScorer,
             for p in got:
                 p["msa_variant"] = vi
             poses += got
-            n_calls += 1
+            n_calls += _calls_used(got)
 
     elif arm == "lineage":
         n_dock = int(cfg.run.n_dock_poses)
         poses = boltz2(system["sequences"], msa_by_seq, system["smiles"],
                        budget - n_dock, cfg)
-        n_calls = 1
+        n_calls = _calls_used(poses)
         # Dock into the most confident co-folded receptor.
         best = max(range(len(poses)),
                    key=lambda i: (poses[i]["confidence"] is not None,
