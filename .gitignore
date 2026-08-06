@@ -200,3 +200,7 @@ models/
 # .reproduction/ are committed by the workflows; the cloned paper repo and paper source are not.
 .reproduction/*/repo/
 .reproduction/*/tex_src/
+
+# Hydra run dirs and W&B offline logs -- run artefacts, not source.
+outputs/
+wandb/
