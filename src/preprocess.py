@@ -17,7 +17,10 @@ from __future__ import annotations
 import json
 import logging
 import os
+import random
+import shutil
 import tarfile
+import time
 import urllib.request
 
 import pandas as pd
@@ -52,19 +55,49 @@ SIM_LOW, SIM_HIGH = 20.0, 60.0
 STANDARD_RESIDUES = set("ACDEFGHIKLMNPQRSTVWY")
 
 
-def _download(key: str, dest_dir: str) -> str:
+def _download(key: str, dest_dir: str, retries: int = 6) -> str:
+    """Fetch one Zenodo file, resuming rather than restarting on failure.
+
+    The cluster's group directory is read-only, so nothing survives between
+    runs and every run re-fetches this record -- including a 414 MB archive.
+    Zenodo throttles that: a bare urlretrieve met HTTP 504 and killed a run
+    before a single system had been processed. Retrying with a Range header
+    resumes the partial file instead of paying for the whole transfer again.
+    """
     os.makedirs(dest_dir, exist_ok=True)
     dest = os.path.join(dest_dir, key)
     if os.path.exists(dest) and os.path.getsize(dest) > 0:
         log.info("cached %s (%.1f MB)", key, os.path.getsize(dest) / 1e6)
         return dest
+
     url = ZENODO_FILE.format(rec=ZENODO_RECORD, key=key)
-    log.info("downloading %s", url)
     tmp = dest + ".part"
-    urllib.request.urlretrieve(url, tmp)
-    os.replace(tmp, dest)
-    log.info("got %s (%.1f MB)", key, os.path.getsize(dest) / 1e6)
-    return dest
+    last = None
+    for attempt in range(retries):
+        have = os.path.getsize(tmp) if os.path.exists(tmp) else 0
+        req = urllib.request.Request(url)
+        if have:
+            # Zenodo answers Range on GET (it reports 200 to HEAD, which is
+            # why this looks unsupported if you probe it the obvious way).
+            req.add_header("Range", f"bytes={have}-")
+        try:
+            with urllib.request.urlopen(req, timeout=600) as resp, \
+                    open(tmp, "ab" if have and resp.status == 206 else "wb") as fh:
+                if have and resp.status != 206:
+                    fh.truncate(0)
+                shutil.copyfileobj(resp, fh, 1024 * 1024)
+            os.replace(tmp, dest)
+            log.info("got %s (%.1f MB)", key, os.path.getsize(dest) / 1e6)
+            return dest
+        except Exception as exc:  # noqa: BLE001 - transport faults are expected here
+            last = f"{type(exc).__name__}: {exc}"
+            got = os.path.getsize(tmp) if os.path.exists(tmp) else 0
+            sleep = min(120, 2 ** attempt * 6) + random.uniform(0, 5)
+            log.warning("download of %s failed (%s) at %.1f MB, retry %d/%d "
+                        "in %.0fs", key, last, got / 1e6, attempt + 1,
+                        retries, sleep)
+            time.sleep(sleep)
+    raise RuntimeError(f"could not download {key} after {retries} attempts -- {last}")
 
 
 def _extract_ground_truth(tgz: str, system_ids: list[str], out_dir: str) -> str:
