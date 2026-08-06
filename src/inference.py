@@ -50,12 +50,34 @@ def _api_key() -> str:
     )
 
 
+# A 422 whose body carries one of these is the server crashing while running
+# the model, not the server rejecting our request. Observed on Boltz-2:
+#   HTTP 422: RuntimeError: Prediction failed: 'confidence_score'
+#     File ".../boltz_pipeline.py", line 1071, in predict
+#       conf = pred_data["confidence_score"]  -> KeyError
+# The identical request succeeded on other machines and on retry, so treating
+# it as a permanent rejection silently costs systems -- and systems lost this
+# way are not lost at random, which is worse for a paired comparison than the
+# lost sample size alone.
+_TRANSIENT_422_MARKERS = ("Prediction failed", "RuntimeError", "Traceback",
+                          "Internal", "process_pool")
+
+
+def _is_transient(code: int, detail: str) -> bool:
+    if code >= 500 or code == 429:
+        return True
+    if code == 422 and any(m in detail for m in _TRANSIENT_422_MARKERS):
+        return True
+    return False
+
+
 def nim_post(url: str, payload: dict, timeout: int = 1800,
-             retries: int = 4) -> dict:
+             retries: int = 5) -> dict:
     """POST with backoff on the failures that are worth retrying.
 
-    5xx and 429 are transient. 4xx other than 429 means the request itself is
-    wrong and retrying just burns time, so those raise immediately.
+    5xx and 429 are transient. A 4xx is normally the request's own fault and
+    retrying only burns time -- except that this NIM also reports server-side
+    crashes as 422, so the body has to be read before deciding.
     """
     key = _api_key()
     body = json.dumps(payload).encode()
@@ -70,9 +92,9 @@ def nim_post(url: str, payload: dict, timeout: int = 1800,
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 return json.loads(resp.read())
         except urllib.error.HTTPError as exc:
-            detail = exc.read()[:500].decode("utf-8", "replace")
+            detail = exc.read()[:800].decode("utf-8", "replace")
             last = f"HTTP {exc.code}: {detail}"
-            if exc.code < 500 and exc.code != 429:
+            if not _is_transient(exc.code, detail):
                 raise NimError(f"{url} rejected the request -- {last}") from exc
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             last = f"{type(exc).__name__}: {exc}"

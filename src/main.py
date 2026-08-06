@@ -205,6 +205,11 @@ def _validate(metrics: dict, mode: str) -> tuple[bool, str, dict]:
         "oracle_lddt_pli": metrics["oracle_lddt_pli"],
         "success_rate": metrics["success_rate"],
         "scoring_coverage": metrics["scoring_coverage"],
+        # Systems the generator never produced poses for -- distinct from
+        # systems that produced poses OpenStructure could not score. Both
+        # shrink the paired sample, and conflating them hides which upstream
+        # is actually costing systems.
+        "generation_failures": metrics["n_failures"],
     }
     if scored < minimum:
         return False, f"too_few_scored_systems_{scored}_of_{minimum}", summary
