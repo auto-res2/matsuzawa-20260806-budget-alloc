@@ -16,5 +16,5 @@ n_systems:
   pilot: 20
   full: null
 
-workers: 8
+workers: 4
 pose_matrix: true

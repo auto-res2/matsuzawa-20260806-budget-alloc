@@ -102,7 +102,10 @@ def nim_post(url: str, payload: dict, timeout: int = 1800,
                 raise NimError(f"{url} rejected the request -- {last}") from exc
         except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
             last = f"{type(exc).__name__}: {exc}"
-        sleep = min(60, 2 ** attempt * 5) + random.uniform(0, 3)
+        # Cap at two minutes rather than one: 429/504 from this gateway
+        # clears on the scale of minutes when several jobs contend, and a
+        # short cap just burns the retry budget while the queue is still full.
+        sleep = min(120, 2 ** attempt * 6) + random.uniform(0, 5)
         log.warning("NIM call failed (%s), retry %d/%d in %.1fs",
                     last, attempt + 1, retries, sleep)
         time.sleep(sleep)
@@ -481,7 +484,14 @@ def run(cfg, systems: list[dict], results_dir: str) -> dict:
     out_dir = os.path.join(results_dir, run_id)
     os.makedirs(out_dir, exist_ok=True)
     work_dir = os.path.join(cfg.cache_dir, "work", run_id)
-    msa_cache = os.path.join(cfg.cache_dir, "msa")
+    # MSAs live under results_dir, NOT cache_dir, so they are collected as run
+    # outputs and can be restored into a later arm's working directory. Three
+    # arms each re-running MSA-search is what saturated that endpoint and cost
+    # 5, 9 and 13 systems in the three pilot arms -- an asymmetric loss, which
+    # is precisely the thing a paired comparison cannot absorb. Sharing the
+    # search also upgrades "the arms probably got identical MSAs" to "the arms
+    # provably read the same bytes", and archives the exact alignments used.
+    msa_cache = os.path.join(results_dir, "_msa")
     scorer = OpenStructureScorer(os.path.join(cfg.cache_dir, "ost"))
     if not scorer.available():
         raise RuntimeError(

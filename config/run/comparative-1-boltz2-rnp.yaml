@@ -17,7 +17,9 @@ n_systems:
   full: null   # null means the whole 20-60 population
 
 # NIM calls are network-bound, so concurrency is about latency, not cores.
-workers: 8
+# Lowered from 8: three arms at 8 workers each put 24 concurrent requests on
+# the hosted endpoints, which answered with 429 and then 504 and cost systems.
+workers: 4
 
 # The 25x25 symmetry-corrected RMSD matrix behind unique_pose_modes. It is
 # the diagnostic that separates "diversity did not increase" from "diversity
