@@ -500,7 +500,30 @@ def run(cfg, systems: list[dict], results_dir: str) -> dict:
             "a local conda prefix when running outside the container."
         )
 
-    records, failures = [], []
+    # Per-system checkpoints. A two-hour run on this cluster was killed by an
+    # infrastructure event with failure_origin=system and every completed
+    # system was lost, because results were only serialised at the end. Each
+    # system is now durable the moment it finishes, and a re-dispatch skips
+    # what is already on disk -- which also makes the run resumable through
+    # inputs_from_runs rather than restartable only from zero.
+    ckpt_dir = os.path.join(out_dir, "systems")
+    os.makedirs(ckpt_dir, exist_ok=True)
+
+    def _ckpt_path(system_id: str) -> str:
+        return os.path.join(ckpt_dir, f"{system_id}.json")
+
+    done, failures = {}, []
+    for system in systems:
+        path = _ckpt_path(system["system_id"])
+        if os.path.exists(path) and os.path.getsize(path) > 0:
+            try:
+                done[system["system_id"]] = json.load(open(path))
+            except ValueError:  # truncated by a kill mid-write; redo it
+                os.remove(path)
+    if done:
+        log.info("resuming: %d/%d systems already complete",
+                 len(done), len(systems))
+    todo = [s for s in systems if s["system_id"] not in done]
 
     def one(system: dict) -> dict | None:
         try:
@@ -508,6 +531,12 @@ def run(cfg, systems: list[dict], results_dir: str) -> dict:
             log.info("%s %s: %d poses, oracle=%s, %.0fs",
                      run_id, system["system_id"], rec["n_poses"],
                      _fmt(_oracle(rec)), rec["gen_seconds"])
+            # Write to a temp file and rename, so a kill during the write
+            # cannot leave a half-written checkpoint that parses as valid.
+            tmp = _ckpt_path(system["system_id"]) + ".part"
+            with open(tmp, "w") as fh:
+                json.dump(rec, fh)
+            os.replace(tmp, _ckpt_path(system["system_id"]))
             return rec
         except Exception as exc:  # noqa: BLE001 - one system must not kill the run
             log.error("%s %s FAILED: %s", run_id, system["system_id"], exc)
@@ -516,16 +545,22 @@ def run(cfg, systems: list[dict], results_dir: str) -> dict:
 
     workers = max(1, int(cfg.run.workers))
     if workers == 1:
-        for system in systems:
-            rec = one(system)
-            if rec:
-                records.append(rec)
+        for system in todo:
+            one(system)
     else:
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            for rec in pool.map(one, systems):
-                if rec:
-                    records.append(rec)
+            list(pool.map(one, todo))
 
+    # Assemble from checkpoints rather than from the in-memory list, so a
+    # resumed run reports everything it has, not just this attempt's share.
+    records = []
+    for system in systems:
+        path = _ckpt_path(system["system_id"])
+        if os.path.exists(path) and os.path.getsize(path) > 0:
+            try:
+                records.append(json.load(open(path)))
+            except ValueError:
+                log.warning("unreadable checkpoint for %s", system["system_id"])
     records.sort(key=lambda r: r["system_id"])
     payload = {"run_id": run_id, "arm": cfg.run.arm, "mode": cfg.mode,
                "budget": int(cfg.run.budget), "records": records,

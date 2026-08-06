@@ -42,6 +42,15 @@ SIM_COLUMN = "sucos_shape_pocket_qcov_2023"
 # hides any difference.
 SIM_LOW, SIM_HIGH = 20.0, 60.0
 
+# MSA-search rejects any sequence containing a non-standard residue:
+#   HTTP 422 {"error": "Value error, Invalid protein sequence: ...X..."}
+# That is a real rejection, not a transient fault, so it is excluded here
+# rather than left to fail mid-run. Filtering at selection keeps the
+# population identical across arms by construction; discovering it at run
+# time would drop the system from whichever arms happened to reach it.
+# Exactly one system of 221 is affected.
+STANDARD_RESIDUES = set("ACDEFGHIKLMNPQRSTVWY")
+
 
 def _download(key: str, dest_dir: str) -> str:
     os.makedirs(dest_dir, exist_ok=True)
@@ -131,6 +140,12 @@ def select_systems(cache_dir: str, n_systems: int | None) -> list[dict]:
         if not (os.path.exists(sdf) and os.path.exists(cif)):
             log.warning("skipping %s: ground truth incomplete", sid)
             continue
+        seqs = inputs[sid]["sequences"]
+        odd = {c for seq in seqs.values() for c in set(seq) - STANDARD_RESIDUES}
+        if odd:
+            log.warning("skipping %s: non-standard residues %s rejected by "
+                        "MSA-search", sid, sorted(odd))
+            continue
         systems.append({
             "system_id": sid,
             "ligand_chain": row["ligand_instance_chain"],
@@ -138,7 +153,7 @@ def select_systems(cache_dir: str, n_systems: int | None) -> list[dict]:
             "smiles": row["ligand_smiles"],
             "similarity": float(row[SIM_COLUMN]),
             "bin": _bin_of(float(row[SIM_COLUMN])),
-            "sequences": inputs[sid]["sequences"],
+            "sequences": seqs,
             "target_cif": cif,
             "target_sdf": sdf,
         })
