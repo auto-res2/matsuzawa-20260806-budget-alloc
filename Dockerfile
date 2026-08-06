@@ -76,6 +76,14 @@ COPY pyproject.toml uv.lock ./
 # which is exactly the failure this pinning is meant to prevent.
 RUN uv sync --frozen --no-install-project
 
+# Put the uv venv first on PATH so that a bare `python -m src.main` resolves to
+# the same interpreter `uv run` would pick. Without this, an entry point that
+# omits `uv run` -- which is what the executor's analyzer generates -- runs the
+# system interpreter, which has none of the pinned dependencies installed, and
+# fails at import time on a package the image demonstrably contains.
+ENV PATH="/workspace/.venv/bin:${PATH}" \
+    VIRTUAL_ENV="/workspace/.venv"
+
 COPY . .
 
 # results_dir the CLI contract writes into.
