@@ -64,6 +64,28 @@ def _assign_percentiles(poses: list[dict]) -> None:
             p.setdefault("_conf_pct", None)
 
 
+def _matrix_nan_fraction(matrix) -> float | None:
+    """How much of the pose-pose matrix failed to score.
+
+    A NaN pair can never merge, so it necessarily raises the mode count. If
+    one arm produces more unscoreable pairs than another -- plausible for the
+    mixed-lineage arm, whose poses come from two different file formats --
+    the diagnostic would read as extra diversity that is really extra
+    failure. Reported so that reading is available rather than hidden.
+    """
+    if not matrix:
+        return None
+    n = len(matrix)
+    total = bad = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            total += 1
+            v = matrix[i][j]
+            if v is None or not math.isfinite(v):
+                bad += 1
+    return (bad / total) if total else None
+
+
 def _unique_modes(matrix, n_poses: int) -> int | None:
     """Count pose modes by complete-linkage clustering at MODE_RMSD.
 
@@ -135,6 +157,7 @@ def compute_metrics(payload: dict) -> dict:
             "ligand_rmsd": min(rmsds) if rmsds else None,
             "success": bool(success),
             "unique_pose_modes": _unique_modes(rec.get("pose_matrix"), len(poses)),
+            "pose_matrix_nan_fraction": _matrix_nan_fraction(rec.get("pose_matrix")),
             "n_scored": len(lddt),
             "n_poses": len(poses),
             "gen_seconds": rec.get("gen_seconds"),
@@ -159,6 +182,7 @@ def compute_metrics(payload: dict) -> dict:
         "success_rate": (sum(1 for s in scored if s["success"]) / len(scored)
                          if scored else None),
         "unique_pose_modes": mean("unique_pose_modes"),
+        "pose_matrix_nan_fraction": mean("pose_matrix_nan_fraction"),
         # Reported, never silently applied: if scoring drops systems, the
         # reader has to be able to see how many and which.
         "scoring_coverage": (n_scored_poses / n_total_poses) if n_total_poses else None,
