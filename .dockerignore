@@ -20,6 +20,12 @@ ENV/
 
 # Results and logs
 .research/results/**
+# ...but not the two things a run needs to resume or to avoid redundant work.
+# Excluding these is what made a run recompute 212 systems whose checkpoints
+# were already committed, and re-run every MSA search that was already
+# archived. Bulk results stay out; the resume data comes in.
+!.research/results/_msa/**
+!.research/results/*/systems/**
 *.log
 
 # IDE
