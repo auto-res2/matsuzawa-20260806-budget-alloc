@@ -122,7 +122,8 @@ def _bin_of(sim: float) -> str:
     return f"{SIMILARITY_BINS[-2]}-{SIMILARITY_BINS[-1]}"
 
 
-def select_systems(cache_dir: str, n_systems: int | None) -> list[dict]:
+def select_systems(cache_dir: str, n_systems: int | None,
+                   shard_index: int = 0, shard_count: int = 1) -> list[dict]:
     """Return the study population, deterministically ordered.
 
     `n_systems` truncates for the cheaper modes. The subset is taken evenly
@@ -159,6 +160,18 @@ def select_systems(cache_dir: str, n_systems: int | None) -> list[dict]:
         sel = ordered.iloc[idx].sort_values("system_id").reset_index(drop=True)
         log.info("subsampled to %d systems spanning similarity %.1f-%.1f",
                  len(sel), sel[SIM_COLUMN].min(), sel[SIM_COLUMN].max())
+
+    # Shard AFTER the deterministic ordering, interleaved rather than sliced
+    # into blocks, so every shard spans the whole similarity range. Long runs
+    # on this cluster get killed by the orchestrator (three times: at 1h55m,
+    # and at 8h28m with 186 systems lost, because outputs on BYO Slurm are
+    # only collected after a clean exit -- a killed run's checkpoints are
+    # never retrieved). Short shards that finish are the only way to keep
+    # work. Interleaving also means a lost shard costs coverage evenly
+    # instead of removing one end of the difficulty range.
+    if shard_count > 1:
+        sel = sel.iloc[shard_index::shard_count].reset_index(drop=True)
+        log.info("shard %d/%d: %d systems", shard_index, shard_count, len(sel))
 
     gt_tgz = _download("ground_truth.tar.gz", cache_dir)
     gt_root = _extract_ground_truth(gt_tgz, sel["system_id"].tolist(), cache_dir)

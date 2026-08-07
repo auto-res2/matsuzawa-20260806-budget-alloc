@@ -18,3 +18,10 @@ n_systems:
 
 workers: 4
 pose_matrix: true
+
+# Sharding. The orchestrator kills long runs -- and on BYO Slurm a killed run's
+# outputs are never collected, so its work is simply gone. Splitting the
+# population into shards that each finish in well under two hours is what makes
+# progress durable. Override on the command line: run.shard_index / shard_count.
+shard_index: 0
+shard_count: 1

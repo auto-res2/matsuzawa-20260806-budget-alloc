@@ -252,10 +252,15 @@ def main(cfg: DictConfig) -> None:
     run_dir = os.path.join(results_dir, cfg.run.run_id)
     os.makedirs(run_dir, exist_ok=True)
 
-    log.info("run_id=%s arm=%s mode=%s n_systems=%s",
-             cfg.run.run_id, cfg.run.arm, mode, n_systems)
+    log.info("run_id=%s arm=%s mode=%s n_systems=%s shard=%s/%s",
+             cfg.run.run_id, cfg.run.arm, mode, n_systems,
+             cfg.run.get("shard_index", 0), cfg.run.get("shard_count", 1))
 
-    systems = select_systems(cache_dir, n_systems)
+    systems = select_systems(
+        cache_dir, n_systems,
+        shard_index=int(cfg.run.get("shard_index", 0)),
+        shard_count=int(cfg.run.get("shard_count", 1)),
+    )
     if not systems:
         print("SANITY_VALIDATION: FAIL reason=no_systems_selected", flush=True)
         sys.exit(1)
