@@ -63,8 +63,14 @@ def _api_key() -> str:
 # it as a permanent rejection silently costs systems -- and systems lost this
 # way are not lost at random, which is worse for a paired comparison than the
 # lost sample size alone.
+# "No GPU available within 120.0s timeout" is the hosted pool being saturated,
+# not a bad request -- waiting is the correct response. Classifying it as
+# permanent sent systems down the batch-splitting ladder instead, turning a
+# queue wait into 1000+ seconds of pointless subdivision. The proposed arm
+# issues five calls per system rather than one, so it pays this five times over.
 _TRANSIENT_422_MARKERS = ("Prediction failed", "RuntimeError", "Traceback",
-                          "Internal", "process_pool")
+                          "Internal", "process_pool", "No GPU available",
+                          "timeout", "Timeout", "capacity", "unavailable")
 
 
 def _is_transient(code: int, detail: str) -> bool:
